@@ -73,6 +73,7 @@ Make sure that you use exactly the same collection name as specified within Zote
 Note that the collection name is case-sensitive and cannot contain spaces.
 
 ```bash
-streamlit run annotation_viewer.py
+COLLECTION_NAME=demo streamlit run annotation_viewer.py
 ```
 
+Replace demo with your Zotero collection name.
