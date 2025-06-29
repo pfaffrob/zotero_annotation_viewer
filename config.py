@@ -2,7 +2,6 @@ import os
 import platform
 from pathlib import Path
 
-
 def get_default_zotero_path() -> Path:
     system = platform.system()
 

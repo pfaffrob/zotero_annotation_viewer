@@ -1,4 +1,5 @@
 import os
+import sys
 import streamlit as st
 import pandas as pd
 import json
@@ -11,16 +12,6 @@ import os
 import glob
 import time
 from config import *
-
-import sys
-
-COLLECTION_NAME = os.getenv("COLLECTION_NAME")
-if not COLLECTION_NAME:
-    sys.exit(
-        "\n❌ Error: The environment variable COLLECTION_NAME is required.\n"
-        "Please run the app like this:\n\n"
-        "COLLECTION_NAME=my_collection streamlit run annotation_viewer.py\n"
-    )
 
 
 def copy_zotero_db():
@@ -177,13 +168,13 @@ def try_copy(src_path, dest_path, attempts=4, delay=0.25):
         except Exception:
             time.sleep(delay)
 
-
+import time
 
 def extract_zotero_data():
+    data = []
     for attempt in range(4):
         try:
             item_keys = get_item_keys(COLLECTION_NAME)
-            data = []
             for item_key in item_keys:
                 annotations = get_annotations(item_key)
                 metadata = get_metadata(item_key)
@@ -193,35 +184,27 @@ def extract_zotero_data():
                     annotation_text = ann["text"]
                     annotation_image_path = ""
 
-                    has_attachment = ann["attachment_key"] and ann["attachment_path"]
-                    if not has_attachment:
-                        continue  # skip annotations without any PDF attachment
-
-                    # if type is highlight without text, try to extract image
                     if not annotation_text and ann["type"] == 3:
                         attachment_path = os.path.join(ZOTERO_STORAGE_PATH, ann["attachment_key"])
-                        if os.path.exists(attachment_path):
-                            pdf_files = glob.glob(os.path.join(attachment_path, "*.pdf"))
-                            if pdf_files:
-                                annotation_image_path = f"{IMAGES_OUTPUT_DIR}/{bibtex_key}/image-{ann['page']}-{ann['annotation_key']}.png"
-                                os.makedirs(os.path.dirname(annotation_image_path), exist_ok=True)
-                                export_image_from_pdf(pdf_files[0], ann, annotation_image_path)
+                        pdf_files = glob.glob(os.path.join(attachment_path, "*.pdf"))
+                        if pdf_files:
+                            annotation_image_path = f"{IMAGES_OUTPUT_DIR}/{bibtex_key}/image-{ann['page']}-{ann['annotation_key']}.png"
+                            os.makedirs(os.path.dirname(annotation_image_path), exist_ok=True)
+                            export_image_from_pdf(pdf_files[0], ann, annotation_image_path)
 
-                    # only append annotations that have text or an image
-                    if annotation_text or annotation_image_path:
-                        data.append({
-                            "year": metadata["year"],
-                            "citekey": bibtex_key,
-                            "link": metadata["url"],
-                            "annotation_text": annotation_text,
-                            "annotation_image": annotation_image_path,
-                            "comment": ann["comment"],
-                            "color": ann["color"],
-                            "zotero": f'zotero://open-pdf/library/items/{ann["attachment_key"]}?page={ann["page"]}&annotation={ann["annotation_key"]}',
-                            "tags": ", ".join(ann["tags"])
-                        })
-
-
+                    data.append({
+                        "year": metadata["year"],
+                        "citekey": bibtex_key,
+                        "link": metadata["url"],
+                        "annotation_text": annotation_text,
+                        "annotation_image": annotation_image_path,
+                        "comment": ann["comment"],
+                        "color": ann["color"],
+                        "zotero": f'zotero://open-pdf/library/items/{ann["attachment_key"]}?page={ann["page"]}&annotation={ann["annotation_key"]}',
+                        "tags": ", ".join(ann["tags"])
+                    })
+                    print(data)
+            #return data
 
             with open("zotero_data.json", "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
@@ -230,9 +213,11 @@ def extract_zotero_data():
 
         except Exception:
             time.sleep(0.2)
-    else:
-        # all 4 attempts failed
-        return
+            if attempt == 3:
+                if len(data) > 0:
+                    with open("zotero_data.json", "w", encoding="utf-8") as f:
+                        json.dump(data, f, indent=2)
+
 
 
 
@@ -253,6 +238,17 @@ def load_data():
 
 
 def main():
+
+    COLLECTION_NAME = os.getenv("COLLECTION_NAME")
+    if not COLLECTION_NAME:
+        sys.exit(
+            "\n❌ Error: The environment variable COLLECTION_NAME is required.\n"
+            "Please run the app like this:\n\n"
+            "COLLECTION_NAME=my_collection streamlit run annotation_viewer.py\n"
+        )
+
+
+    
     st.set_page_config(layout="wide")
     st.title("Zotero Annotations Viewer")
 

@@ -2,6 +2,8 @@
 
 A simple Streamlit-based tool to browse and visualize your Zotero annotations.
 
+Please be aware that this is far from perfect and there are many improvements that could be made. Especially when it comes to error handling. But please feel free to open an issue or a pull request if you have suggestions for improvements.
+
 ## 🛠️ Setup Instructions
 
 Follow these steps to get started:
