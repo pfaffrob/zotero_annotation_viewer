@@ -11,8 +11,18 @@ import shutil
 import os
 import glob
 import time
+import fitz
 from config import *
 
+import sys
+
+COLLECTION_NAME = os.getenv("COLLECTION_NAME")
+if not COLLECTION_NAME:
+    sys.exit(
+        "\n❌ Error: The environment variable COLLECTION_NAME is required.\n"
+        "Please run the app like this:\n\n"
+        "COLLECTION_NAME=my_collection streamlit run annotation_viewer.py\n"
+    )
 
 def copy_zotero_db():
     shutil.copy2(ZOTERO_DB_PATH, DB_COPY_PATH)
@@ -203,7 +213,7 @@ def extract_zotero_data():
                         "zotero": f'zotero://open-pdf/library/items/{ann["attachment_key"]}?page={ann["page"]}&annotation={ann["annotation_key"]}',
                         "tags": ", ".join(ann["tags"])
                     })
-                    print(data)
+                    #print(data)
             #return data
 
             with open("zotero_data.json", "w", encoding="utf-8") as f:
@@ -211,12 +221,14 @@ def extract_zotero_data():
 
             break  # success, exit retry loop
 
-        except Exception:
+        except Exception as e:
             time.sleep(0.2)
-            if attempt == 3:
-                if len(data) > 0:
-                    with open("zotero_data.json", "w", encoding="utf-8") as f:
-                        json.dump(data, f, indent=2)
+            print(f"Attempt {attempt + 1} failed: {e}")
+            #print(e)
+            # if attempt == 3:
+            #     if len(data) > 0:
+            #         with open("zotero_data.json", "w", encoding="utf-8") as f:
+            #             json.dump(data, f, indent=2)
 
 
 
@@ -238,14 +250,6 @@ def load_data():
 
 
 def main():
-
-    COLLECTION_NAME = os.getenv("COLLECTION_NAME")
-    if not COLLECTION_NAME:
-        sys.exit(
-            "\n❌ Error: The environment variable COLLECTION_NAME is required.\n"
-            "Please run the app like this:\n\n"
-            "COLLECTION_NAME=my_collection streamlit run annotation_viewer.py\n"
-        )
 
 
     
@@ -294,8 +298,9 @@ def main():
     
     # Year slider filter
     min_year, max_year = df["year"].min(), df["year"].max()
-    selected_year_range = st.sidebar.slider("Select Year Range", min_year, max_year, (min_year, max_year))
-    df = df[df["year"].between(*selected_year_range)]
+    if max_year - min_year > 0:
+        selected_year_range = st.sidebar.slider("Select Year Range", min_year, max_year, (min_year, max_year))
+        df = df[df["year"].between(*selected_year_range)]
 
     # Sidebar color filter
     all_colors = sorted(df["color_name"].dropna().unique())
@@ -341,5 +346,14 @@ def main():
 
 
 if __name__ == "__main__":
+    import sys
+
+    COLLECTION_NAME = os.getenv("COLLECTION_NAME")
+    if not COLLECTION_NAME:
+        sys.exit(
+            "\n❌ Error: The environment variable COLLECTION_NAME is required.\n"
+            "Please run the app like this:\n\n"
+            "COLLECTION_NAME=my_collection streamlit run annotation_viewer.py\n"
+        )
     extract_zotero_data()
     main()

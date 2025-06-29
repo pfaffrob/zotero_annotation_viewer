@@ -2,6 +2,9 @@ import os
 import platform
 from pathlib import Path
 
+
+
+
 def get_default_zotero_path() -> Path:
     system = platform.system()
 
@@ -15,9 +18,7 @@ def get_default_zotero_path() -> Path:
         raise RuntimeError("Unsupported operating system")
 
 # Example usage
-ZOTERO_FOLDER = get_default_zotero_path()
-
-#COLLECTION_NAME = "myrtle_rust" # Replace with your actual collection name
+ZOTERO_FOLDER = get_default_zotero_path() # Default Zotero folder path based on the operating system, change if istalled at a different place
 
 ZOTERO_DB_PATH = os.path.join(ZOTERO_FOLDER, "zotero.sqlite")
 ZOTERO_STORAGE_PATH = os.path.join(ZOTERO_FOLDER, "storage")
