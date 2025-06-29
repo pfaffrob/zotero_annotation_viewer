@@ -42,7 +42,7 @@ Download and install Zotero from:
 https://www.zotero.org/download/
 
 ### 3. Install the Better BibTeX plugin  
-Download and install Better BibTeX plugin for Zotero. More information can be found here:  
+Install Better BibTeX plugin for Zotero. More information can be found here:  
 https://retorque.re/zotero-better-bibtex/
 
 ### 4. Install Anaconda or Miniconda (if not already installed)
