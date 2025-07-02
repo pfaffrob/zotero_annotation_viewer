@@ -64,7 +64,7 @@ conda activate zotero_viewer
 ### 7. Install dependencies
 
 ```bash
-conda install -c conda-forge streamlit=1.45.1 pandas=2.2.2 tc06580::pymupdf
+conda install -c conda-forge streamlit=1.45.1 pandas=2.2.2
 pip install streamlit-autorefresh==1.0.1 PyMuPDF
 ```
 
